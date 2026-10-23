@@ -1,13 +1,9 @@
-# Session state and generated artifacts
 .Rhistory
 .RData
 .Ruserdata
 .Rproj.user/
 .env
 .DS_Store
-data/raw/*.csv
-data/raw/*.zip
 outputs/
 *.rds
 *.RDS
-*.log

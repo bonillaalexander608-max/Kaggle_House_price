@@ -1,0 +1,4 @@
+model,evaluation,rmse_usd,rsq_correlation_squared,mae_usd
+Linear,Training,26096,0.883,16265
+Linear,Internal test,40897,0.8,19212
+WLS,Internal test,50837,0.756,18195

@@ -6,10 +6,14 @@ output:
   html_document: default
   pdf_document: default
 ---
+
+> **Source report:** this notebook preserves the original exploratory analysis and its narrative. The supplied rendered HTML contains outputs that differ from several narrative numbers below. Read `docs/RESULTS_AND_SCOPE.md` and use the stored tables for the recorded results. The data concern Ames, Iowa, not Nicaragua. Rerendering uses current local packages and is not guaranteed to reproduce the old HTML.
+
+
 <style>
 body{
-front-family:"Arial", sans-serif;
-front-size: 12pt;
+font-family:"Arial", sans-serif;
+font-size: 12pt;
 text-align: justify;
 
 }
@@ -29,9 +33,9 @@ options(scipen = 999)
 Importancion de datos 
 ```{r}
 ###### direccion 
-setwd("C:/Users/DELL/OneDrive/Escritorio/kaggle/House Price")
-Prueba <- read_delim("test.csv", delim = ";", escape_double = FALSE, trim_ws = TRUE)
-Entrenamiento <- read_delim("train.csv", delim = ";", escape_double = FALSE, trim_ws =TRUE)
+# Run using render_report.R from the repository root.
+Prueba <- read_csv("data/raw/test.csv", show_col_types = FALSE)
+Entrenamiento <- read_csv("data/raw/train.csv", show_col_types = FALSE)
 ```
 
 Introducción.

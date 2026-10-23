@@ -1,71 +1,78 @@
-# Ames House Prices — R, tidymodels and XGBoost
+# Ames House Prices: statistical modelling and feature engineering in R
 
-A housing-price regression project comparing a linear baseline, tuned XGBoost and a fixed blend on the Ames, Iowa competition dataset. The project combines exploratory analysis, feature engineering, cross-validation, residual diagnostics and uncertainty in performance differences.
+**Author: Yader Alexander Ramírez Bonilla.** An exploratory housing-price study using the Ames, Iowa Kaggle data. This repository presents the supplied analysis: EDA, feature engineering, linear and weighted regression, prediction intervals, XGBoost experiments and linear/XGBoost blending.
 
-**Status:** historical experiments are archived; a revised reproducible R pipeline is provided. Its model metrics are **pending execution**. No training-set metric or unverified competition score is presented as held-out performance. The former README reported R² = 0.918 and 100% prediction-interval coverage; these are retained as historical claims in the archive, not verified revised results.
+## Start here
 
-## Data at a glance
+- [Analysis notebook](analysis/House_Prices.Rmd): original analysis with portable CSV paths.
+- [Saved HTML report](reports/original_report.html): download and open locally to read the already-rendered analysis; GitHub displays its source.
+- [Original scripts](source/README.md): regression, XGBoost, regularization and blend experiments.
+- [Results and interval interpretation](docs/RESULTS_AND_SCOPE.md): recorded outputs and their evaluation scope.
 
-| File | Houses | Columns | Target |
-|---|---:|---:|---|
-| Kaggle train | 1,460 | 81 | SalePrice |
-| Kaggle test | 1,459 | 80 | Unavailable |
+## Feature engineering
 
-The supplied labelled data span USD 34,900–755,000, with a median of USD 163,000. These are descriptive figures, not model performance. This is a US housing dataset; no claim is made about valuation in Nicaragua.
+| Feature | Construction |
+|---|---|
+| House age | sale year − construction year |
+| Total porch / porch indicator | sum of four porch areas; indicator of positive area |
+| Total bathrooms | full bathrooms + 0.5 × half bathrooms, including basement |
+| Overall condition groups | ≤4, 5–7, ≥8 |
+| Pool, miscellaneous feature, fireplace, masonry indicators | indicator that the relevant area/count/value is positive |
+| Log transformations | SalePrice and, in later recipes, LotArea |
 
-![Observed price distribution](reports/figures/price_distribution.svg)
+Categorical screening selects Neighborhood, ExterQual, BsmtQual, KitchenQual and GarageFinish. Recipes include manual feature removal, dummy encoding, rare-category handling, correlation filtering in some variants and normalization. [Exact formulas and implementation differences](docs/FEATURE_ENGINEERING.md).
 
-![Living area and price](reports/figures/living_area_vs_price.svg)
+![Feature indicators from the original report](reports/figures/05_feature_indicators.png)
 
-These plots describe all labelled observations already available during historical exploration. They are not plots of held-out model predictions.
+## Recorded regression results
 
-## Modelling approach
+These are the **printed outputs in the supplied HTML**, rounded as saved, rather than a new model run:
 
-- Predict natural-log SalePrice; evaluate log RMSE as the primary metric.
-- Hold out 20% of labelled rows; use five-fold CV within training.
-- Learn imputation, encoding and normalization separately within resampling fits.
-- Compare linear regression with 20 XGBoost tuning configurations on the same folds.
-- Evaluate a fixed 60/40 blend of dollar-scale linear/XGBoost predictions.
-- Export dollar RMSE/MAE, predictive R², paired bootstrap CIs, residual plots and three Kaggle submission files.
+| Model | Evaluation | RMSE (USD) | Squared correlation (`rsq`) | MAE (USD) |
+|---|---|---:|---:|---:|
+| Linear | Training | 26,096 | 0.883 | 16,265 |
+| Linear | Internal test | 40,897 | 0.800 | 19,212 |
+| WLS | Internal test | 50,837 | 0.756 | 18,195 |
 
-No residual-based or living-area deletion is performed in the revised pipeline. This avoids silently narrowing the evaluation population. Feature engineering follows the original project, while session dependencies and mixed evaluation scales are corrected. [Methodology and limitations](docs/METHODOLOGY.md).
+The WLS run lowers MAE but increases RMSE in this saved output. Narrative values elsewhere in the original document differ from these printed values; the discrepancy is documented rather than silently combined. XGBoost and blend code is included, but no comparable verified metric export is invented. [Model variants and original parameters](docs/MODELS.md).
 
-## Run locally
+![Observed/predicted values and residuals](reports/figures/08_observed_predicted_and_residuals.png)
 
-1. Download the competition files from [Kaggle](https://www.kaggle.com/competitions/house-prices-advanced-regression-techniques/data) and place `train.csv` / `test.csv` in `data/raw/`.
-2. Open `HousePrices.Rproj` in RStudio, or open the repository folder in Positron.
-3. Run from the repository root in a fresh R session:
+## 95% prediction intervals for individual houses
+
+The original work includes **prediction intervals**, not just point estimates. Log-scale lower/upper endpoints are converted to dollars with `exp()`. The WLS notebook calculates them on `Test_split` and plots **98.98% observed coverage** in the saved figure:
+
+![Original WLS prediction-interval plot](reports/figures/10_wls_prediction_intervals.png)
+
+A separate [original Excel export](reports/Intervalo_prediccion.xlsx) contains 1,454 training prediction rows and their limits. Recomputed coverage in that export is **96.01%**, mean width **USD 93,483**. This is in-sample coverage from a different branch, not the WLS test result. [Downloadable interval rows](reports/prediction_intervals_original.csv) and [summary](reports/prediction_interval_summary.json).
+
+The WLS HTML contains rank-deficiency and constant-prediction-variance warnings. Its nominal 95% intervals are preserved as the author's exploratory calculation; 100% observed coverage does not itself establish correct calibration. [Formulas, warnings and interpretation](docs/RESULTS_AND_SCOPE.md).
+
+## EDA and diagnostics
+
+The report includes sale-price distribution/QQ plots, Anderson–Darling, missing-value inspection, numeric correlation, ANOVA/categorical screening, derived indicators, Cook's distance, residual scatterplots, residual QQ plots and Lilliefors tests. All ten figures are extracted from the supplied HTML, with English filenames and original Spanish plot labels.
+
+![Missingness](reports/figures/03_missing_values.png)
+
+## Run or read the original work
+
+Open `HousePrices.Rproj` in RStudio or the repository folder in Positron. The supplied CSV inputs and dictionary are under `data/`. From the repository root:
 
 ```r
 source("install_dependencies.R")
-source("01_prepare.R")
-source("02_fit.R")
-source("03_evaluate.R")
-source("04_submission.R")
+source("render_report.R")
 ```
 
-`source("run_all.R")` executes the four stages. `source("05_eda.R")` exports descriptive figures separately from model evaluation. Set seeds and budget in `00_config.R`. A default run evaluates 20 × 5 XGBoost candidate/fold combinations, plus the linear CV and final fits. Engine submodel reuse may reduce actual fit count. Runtime depends on hardware. The tuning stage has no mid-run checkpoint.
+Rendering uses the original model/statistical steps and writes a new HTML under `outputs/report/`. It was not executed during this repository reformulation; current package versions and original session dependencies may affect rerendering. Reading the saved HTML requires no model training. The standalone scripts are documented exploratory branches, not a new end-to-end pipeline.
 
-Generated outputs are written to `outputs/run_v1/` and ignored by Git. Use a new run directory after changes to inputs, scripts, packages or configuration. The preparation step guards against mixing incompatible configurations. Package versions are recorded when preparation runs; a verified lockfile is not yet available.
+## Repository map
 
-## Outputs after execution
+- `analysis/`: portable original R Markdown.
+- `source/`: supplied R/Rmd experiments and rendering log.
+- `data/`: supplied CSVs and variable descriptions.
+- `reports/`: supplied HTML/Excel, extracted figures, printed metrics and interval-export summaries.
+- `docs/`: feature formulas, model variants, result provenance and statistical scope.
 
-| Output | Purpose |
-|---|---|
-| `tables/cv_log_metrics.csv` | Cross-validation metrics on log-price scale |
-| `tables/best_hyperparameters.csv` | Best XGBoost configuration by CV log RMSE |
-| `tables/holdout_metrics.csv` | Internal held-out point estimates |
-| `tables/holdout_metric_ci.csv` | Conditional 95% bootstrap CIs by model |
-| `tables/paired_improvement_ci.csv` | Paired differences against Linear |
-| `figures/observed_vs_predicted.png`, `residuals.png` | Held-out diagnostics |
-| `submission_linear.csv`, `submission_xgboost.csv`, `submission_blend.csv` | Kaggle-format predictions |
+**Scope:** Ames housing, not validated Nicaraguan valuation. Original imputation/selection occur before the internal split, and some script evaluations overlap their fit data. These limitations are documented; the repository does not claim that the original experiments constitute leakage-free external validation. No new models, conformal intervals or bootstrap experiments have been added.
 
-Metric CIs are not house-level prediction intervals. The previously explored data do not become a new external validation set simply by resplitting them. No automatic Kaggle submission is performed.
-
-## Project history
-
-`archive/` contains the original exploratory R/Rmd files, clearly separated from the runnable pipeline. Their local paths and historical claims are not endorsed as revised results. Saved workspaces, console history, logs and the old HTML report are excluded.
-
-Author: Yader Alexander Ramírez Bonilla. Data source: [House Prices — Advanced Regression Techniques](https://www.kaggle.com/competitions/house-prices-advanced-regression-techniques). Competition data should be obtained from the source under its rules. No license for the source data is asserted here.
-
-**Preparation checks:** input dimensions, IDs, positive targets, declared output paths and documentation links checked. EDA summaries/figures generated from the supplied CSV. Full R execution and revised model results remain pending.
+Repository reformulation preserves the original research rather than replacing it with a proposed workflow. Source artifacts were checked, all ten embedded figures extracted, and the Excel's membership flags/coverage/widths independently recalculated. No original fitted model was rerun.

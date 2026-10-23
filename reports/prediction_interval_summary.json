@@ -1,0 +1,13 @@
+{
+  "artifact": "Intervalo_prediccion.xlsx",
+  "n": 1454,
+  "nominal_level": 0.95,
+  "covered": 1396,
+  "coverage": 0.9601100412654745,
+  "mean_width_usd": 93483.3531411069,
+  "median_width_usd": 85772.2862029648,
+  "rmse_usd": 23484.364525626643,
+  "mae_usd": 16165.152160311329,
+  "rsq_correlation_squared": 0.9034186886569774,
+  "scope": "Training predictions as exported by houseprice.R; not WLS holdout predictions."
+}
