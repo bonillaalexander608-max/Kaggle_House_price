@@ -1,3 +1,7 @@
+# Current and historical models
+
+The current executed comparison is OLS versus feasible GLS with shared features. Ten-fold CV also evaluates a training-only area restriction; holdout rows are never excluded. A separate fixed OLS proper-training model supplies split-conformal intervals. Fresh exported results are in `reports/revised/`. Original XGBoost/blend branches below have not been rerun under common corrected validation and have no revised score here.
+
 # Model branches in the supplied files
 
 | Branch | Source | What is present |

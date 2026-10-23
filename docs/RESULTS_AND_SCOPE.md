@@ -1,3 +1,11 @@
+# Corrected results and historical scope
+
+Current results are in `reports/revised/holdout_metrics.csv`, `cv_summary.csv` and `interval_summary.csv`; regenerate with `Rscript run_analysis.R`. They come from an executed base-R rebuild using the original feature ideas, not an attempt to exactly reproduce the old tidymodels session. The raw-data split precedes learned preprocessing. OLS/FGLS use a shared full-rank design, and FGLS predicts new-house variance weights. Individual prediction intervals are distinguished from mean-response confidence intervals.
+
+The model/area policy is selected by training CV only. All holdout houses remain in evaluation. The conformal baseline is prespecified OLS without area filtering and uses independent proper/calibration subsets of outer training; its fit is never refitted on calibration outcomes. Coverage confidence limits are binomial diagnostics, not per-house guarantees. The broader Ames data and feature choices had been historically explored, so this reassessment is not a pristine external validation. Geographic transfer to Nicaragua is untested.
+
+The original regression/WLS results, workbook and figures below are historical artifacts with documented limitations. They are not the current performance table.
+
 # Recorded results and evaluation scope
 
 The supplied HTML is the source of the following rounded printed results, not an unexecuted reimplementation:

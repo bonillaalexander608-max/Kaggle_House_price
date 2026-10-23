@@ -1,4 +1,4 @@
-packages <- c("tidyverse","tidymodels","nortest","kableExtra","ltm","patchwork",
-              "gridExtra","rmarkdown","knitr","xgboost","glmnet","vip","car","writexl")
-missing <- packages[!vapply(packages,requireNamespace,logical(1),quietly=TRUE)]
-if (length(missing)) install.packages(missing,repos="https://cloud.r-project.org")
+# The revised OLS/FGLS analysis and standalone HTML renderer use base R only.
+message('No third-party packages are required for run_analysis.R or render_report.R.')
+message('Optional R Markdown knitting: install.packages(c("rmarkdown", "knitr"))')
+message('Original experiments: see source/install_legacy_dependencies.R.')

@@ -1,3 +1,9 @@
+# Current corrected feature processing
+
+The corrected pipeline retains the original feature ideas but learns numerical medians, categorical mappings, scaling and QR rank filtering within each fitting partition. OverallCond_grupo is categorical. OLS and FGLS receive the same encoded columns. See `analysis/House_Prices.Rmd` and `R/revised_analysis.R` for the implemented formulas and `reports/revised/model_features.csv` for the fitted columns. No skipped selection step is used.
+
+The following section documents historical variants, not the corrected runtime:
+
 # Feature engineering present in the supplied work
 
 | Feature | Original construction | Scope |

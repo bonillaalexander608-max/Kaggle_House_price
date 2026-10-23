@@ -1,78 +1,71 @@
-# Ames House Prices: statistical modelling and feature engineering in R
+# Ames House Prices: regression, feature engineering and prediction intervals
 
-**Author: Yader Alexander Ramírez Bonilla.** An exploratory housing-price study using the Ames, Iowa Kaggle data. This repository presents the supplied analysis: EDA, feature engineering, linear and weighted regression, prediction intervals, XGBoost experiments and linear/XGBoost blending.
+**Yader Alexander Ramírez Bonilla** · R statistical modelling project using the Ames, Iowa housing data.
 
-## Start here
+The principal analysis has been corrected after an external code review. It retains the original feature engineering, compares OLS and feasible GLS on the **same design matrix**, evaluates ten training folds, and measures individual prediction-interval coverage on a separate holdout. Original linear, XGBoost and blending experiments remain in `source/` as research history.
 
-- [Analysis notebook](analysis/House_Prices.Rmd): original analysis with portable CSV paths.
-- [Saved HTML report](reports/original_report.html): download and open locally to read the already-rendered analysis; GitHub displays its source.
-- [Original scripts](source/README.md): regression, XGBoost, regularization and blend experiments.
-- [Results and interval interpretation](docs/RESULTS_AND_SCOPE.md): recorded outputs and their evaluation scope.
+## Read or reproduce
 
-## Feature engineering
+- [Corrected analysis notebook](analysis/House_Prices.Rmd)
+- [Executed results and HTML report](reports/revised/): download the repository and open `reports/revised/index.html` locally.
+- [Verified response to the external review](docs/REVIEW_RESPONSE.md): confirmed problems, qualifications and corrections.
 
-| Feature | Construction |
-|---|---|
-| House age | sale year − construction year |
-| Total porch / porch indicator | sum of four porch areas; indicator of positive area |
-| Total bathrooms | full bathrooms + 0.5 × half bathrooms, including basement |
-| Overall condition groups | ≤4, 5–7, ≥8 |
-| Pool, miscellaneous feature, fireplace, masonry indicators | indicator that the relevant area/count/value is positive |
-| Log transformations | SalePrice and, in later recipes, LotArea |
-
-Categorical screening selects Neighborhood, ExterQual, BsmtQual, KitchenQual and GarageFinish. Recipes include manual feature removal, dummy encoding, rare-category handling, correlation filtering in some variants and normalization. [Exact formulas and implementation differences](docs/FEATURE_ENGINEERING.md).
-
-![Feature indicators from the original report](reports/figures/05_feature_indicators.png)
-
-## Recorded regression results
-
-These are the **printed outputs in the supplied HTML**, rounded as saved, rather than a new model run:
-
-| Model | Evaluation | RMSE (USD) | Squared correlation (`rsq`) | MAE (USD) |
-|---|---|---:|---:|---:|
-| Linear | Training | 26,096 | 0.883 | 16,265 |
-| Linear | Internal test | 40,897 | 0.800 | 19,212 |
-| WLS | Internal test | 50,837 | 0.756 | 18,195 |
-
-The WLS run lowers MAE but increases RMSE in this saved output. Narrative values elsewhere in the original document differ from these printed values; the discrepancy is documented rather than silently combined. XGBoost and blend code is included, but no comparable verified metric export is invented. [Model variants and original parameters](docs/MODELS.md).
-
-![Observed/predicted values and residuals](reports/figures/08_observed_predicted_and_residuals.png)
-
-## 95% prediction intervals for individual houses
-
-The original work includes **prediction intervals**, not just point estimates. Log-scale lower/upper endpoints are converted to dollars with `exp()`. The WLS notebook calculates them on `Test_split` and plots **98.98% observed coverage** in the saved figure:
-
-![Original WLS prediction-interval plot](reports/figures/10_wls_prediction_intervals.png)
-
-A separate [original Excel export](reports/Intervalo_prediccion.xlsx) contains 1,454 training prediction rows and their limits. Recomputed coverage in that export is **96.01%**, mean width **USD 93,483**. This is in-sample coverage from a different branch, not the WLS test result. [Downloadable interval rows](reports/prediction_intervals_original.csv) and [summary](reports/prediction_interval_summary.json).
-
-The WLS HTML contains rank-deficiency and constant-prediction-variance warnings. Its nominal 95% intervals are preserved as the author's exploratory calculation; 100% observed coverage does not itself establish correct calibration. [Formulas, warnings and interpretation](docs/RESULTS_AND_SCOPE.md).
-
-## EDA and diagnostics
-
-The report includes sale-price distribution/QQ plots, Anderson–Darling, missing-value inspection, numeric correlation, ANOVA/categorical screening, derived indicators, Cook's distance, residual scatterplots, residual QQ plots and Lilliefors tests. All ten figures are extracted from the supplied HTML, with English filenames and original Spanish plot labels.
-
-![Missingness](reports/figures/03_missing_values.png)
-
-## Run or read the original work
-
-Open `HousePrices.Rproj` in RStudio or the repository folder in Positron. The supplied CSV inputs and dictionary are under `data/`. From the repository root:
+From the project root in Positron/RStudio:
 
 ```r
-source("install_dependencies.R")
-source("render_report.R")
+source("tests/check_revised.R")
+source("run_analysis.R")
 ```
 
-Rendering uses the original model/statistical steps and writes a new HTML under `outputs/report/`. It was not executed during this repository reformulation; current package versions and original session dependencies may affect rerendering. Reading the saved HTML requires no model training. The standalone scripts are documented exploratory branches, not a new end-to-end pipeline.
+Or run `Rscript run_analysis.R`. The corrected computation and HTML renderer use **base R**, with no third-party package installation. Optional knitting of the Rmd requires rmarkdown/knitr. `render_report.R` regenerates the same corrected outputs.
 
-## Repository map
+## Corrected validation
 
-- `analysis/`: portable original R Markdown.
-- `source/`: supplied R/Rmd experiments and rendering log.
-- `data/`: supplied CSVs and variable descriptions.
-- `reports/`: supplied HTML/Excel, extracted figures, printed metrics and interval-export summaries.
-- `docs/`: feature formulas, model variants, result provenance and statistical scope.
+A raw-data random 80/20 split uses seed 123: **1,168 training / 292 holdout houses**. Ten training folds use seed 42. Medians, categorical mappings, scaling, independent columns and variance weights are learned separately in each analysis partition. No internal-test data are used to fit preprocessing.
 
-**Scope:** Ames housing, not validated Nicaraguan valuation. Original imputation/selection occur before the internal split, and some script evaluations overlap their fit data. These limitations are documented; the repository does not claim that the original experiments constitute leakage-free external validation. No new models, conformal intervals or bootstrap experiments have been added.
+The inherited features include house age, total bathrooms, porch presence, condition groups, and pool/miscellaneous/fireplace/masonry indicators. Condition groups are now categorical, as originally intended. ID, redundant component areas and the raw fields replaced by features are excluded. [Feature details](docs/FEATURE_ENGINEERING.md).
 
-Repository reformulation preserves the original research rather than replacing it with a proposed workflow. Source artifacts were checked, all ten embedded figures extracted, and the Excel's membership flags/coverage/widths independently recalculated. No original fitted model was rerun.
+The experiment compares fitting all training houses with a **training-only GrLivArea <4000** restriction, assessing both on identical folds containing all validation houses. It does not delete high-error or influential holdout houses. The CV-selected model/policy is FGLS with this training restriction. Its mean CV RMSE-log is **0.14371**, versus **0.14374** for OLS with the same restriction: a tiny descriptive difference, not evidence of a substantial weighting benefit.
+
+## Fresh internal holdout results
+
+| Model, shared selected training policy | RMSE log | RMSE USD | MAE USD | Predictive R² |
+|---|---:|---:|---:|---:|
+| OLS | 0.13840 | 21,901 | 15,778 | 0.9243 |
+| FGLS | 0.13854 | 21,878 | 15,783 | 0.9245 |
+
+[Raw metrics](reports/revised/holdout_metrics.csv) include squared correlation separately from predictive R² = 1 − SSE/SST. FGLS was selected by training CV, even though OLS happens to have a slightly lower holdout log error; the test does not switch the winner. These results are **not a public Kaggle score** and are not directly comparable to the old split/model runs. Exponentiated log predictions are median-type price estimates.
+
+![Corrected log-scale diagnostics](reports/revised/figures/log_residual_diagnostics.png)
+
+## 95% individual prediction intervals
+
+| Method | Observed holdout coverage | Mean width USD |
+|---|---:|---:|
+| OLS parametric | 94.86% | 90,123 |
+| FGLS parametric | 95.21% | 88,282 |
+| OLS split conformal | 96.23% | 104,301 |
+
+![Coverage uncertainty](reports/revised/figures/interval_coverage.png)
+
+[Coverage summaries and binomial confidence limits](reports/revised/interval_summary.csv) and [individual interval rows](reports/revised/holdout_prediction_intervals.csv) are exported. FGLS predicts future variance weights rather than using a future house's own residual. Its parametric intervals remain approximate.
+
+Conformal uses a **separate, prespecified OLS/all-properties** model: 876 proper-training houses and 292 calibration houses from outer training, seed 2026. It uses the exact finite-sample order statistic and never refits on calibration data. Its marginal-coverage theory requires exchangeability; it is not a per-house or Nicaragua coverage guarantee. Different fitting sample sizes and area policies affect width, so this is not an isolated comparison of interval methods. Coverage above 95% alone does not establish perfect calibration or prove population overcoverage.
+
+## What the review changed
+
+- Removed unsupported claims of a large WLS improvement, perfect coverage and applicability to Nicaragua.
+- Replaced reciprocal absolute-residual weights with an explicit training-only FGLS variance working model.
+- Used shared features, training-only preprocessing and log-scale error diagnostics.
+- Replaced the skipped-selection path and checked full rank, novel categories and prediction contracts.
+- Evaluated area exclusion as sensitivity, not an automatic universal fix.
+- Added exact split-conformal quantiles and uncertainty around observed coverage.
+- Exported a [new submission](reports/revised/submission_revised.csv) only after assessment; it has not been sent to Kaggle.
+
+The review was not entirely correct: constant future-error variance does not make all prediction intervals equally wide, and original source scripts do contain submission code. Its proposed default R quantile also needed the finite-sample order-statistic correction. [Full verification](docs/REVIEW_RESPONSE.md).
+
+## Historical results and limitations
+
+[Original report](reports/original_report.html), [legacy notebook](analysis/House_Prices_legacy.Rmd), [original Excel intervals](reports/Intervalo_prediccion.xlsx) and [source experiments](source/README.md) are retained for traceability. They contain known issues; use the corrected notebook as the primary analysis. Original XGBoost/blend code has overlapping fitting/evaluation data and has not been assigned new validated scores.
+
+This is a post hoc internal reassessment of a previously explored dataset and inherited feature choices, not a pristine external test. The data describe Ames, Iowa; transfer across countries, time or housing markets remains unvalidated. No improvement in Kaggle leaderboard rank is claimed.

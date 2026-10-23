@@ -1,0 +1,2 @@
+"model","scale","variance_statistic","variance_df","variance_p_value","max_cooks_distance","undefined_cooks_count","max_leverage"
+"OLS","log price",2.50330433822363,1,0.113607706849375,0.0730356303669612,0,0.306896000111599
